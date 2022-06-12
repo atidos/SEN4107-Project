@@ -39,6 +39,16 @@ def get_label_emotion(label : int) -> str:
     }
     return label_emotion_map[label]
 
+def get_label_age(label : int) -> str:
+    label_age_map = {
+        0: '0-3',
+        1: '4-19',
+        2: '20-39',
+        3: '40-69',
+        4: '70+',
+    }
+    return label_age_map[label]
+
 def tensor_to_numpy(image):
     if type(image) != np.ndarray:
         return image.cpu().squeeze().numpy()

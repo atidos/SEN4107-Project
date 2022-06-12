@@ -18,7 +18,7 @@ import torchvision.transforms.transforms as transforms
 from face_detector.face_detector import DnnDetector, HaarCascadeDetector
 
 from model.model import Mini_Xception
-from utils import get_label_emotion, normalization, histogram_equalization, standerlization
+from utils import get_label_emotion, normalization, histogram_equalization, standerlization, get_label_age
 from face_alignment.face_alignment import FaceAlignment
 
 sys.path.insert(1, 'face_detector')
@@ -29,9 +29,16 @@ def main(args):
     mini_xception = Mini_Xception().to(device)
     mini_xception.eval()
 
+    mini_xception_age = Mini_Xception().to(device)
+    mini_xception_age.eval()
+
     # Load model
     checkpoint = torch.load(args.pretrained, map_location=device)
+    checkpoint_age = torch.load(args.pretrained_age, map_location=device)
+
     mini_xception.load_state_dict(checkpoint['mini_xception'])
+    mini_xception_age.load_state_dict(checkpoint_age['mini_xception'])
+
     face_alignment = FaceAlignment()
 
     # Face detection
@@ -90,25 +97,51 @@ def main(args):
                 input_face = input_face.to(device)
                 t = time.time()
                 emotion = mini_xception(input_face)
+                age = mini_xception_age(input_face)
+
                 # print(f'\ntime={(time.time()-t) * 1000 } ms')
 
                 torch.set_printoptions(precision=6)
                 softmax = torch.nn.Softmax()
+
                 emotions_soft = softmax(emotion.squeeze()).reshape(-1,1).cpu().detach().numpy()
                 emotions_soft = np.round(emotions_soft, 3)
+
+                ages_soft = softmax(emotion.squeeze()).reshape(-1,1).cpu().detach().numpy()
+                ages_soft = np.round(emotions_soft, 3)
+
                 for i, em in enumerate(emotions_soft):
                     em = round(em.item(),3)
                     # print(f'{get_label_emotion(i)} : {em}')
 
-                emotion = torch.argmax(emotion)                
-                percentage = round(emotions_soft[emotion].item(), 2)
-                emotion = emotion.squeeze().cpu().detach().item()
-                emotion = get_label_emotion(emotion)
+                for i, ag in enumerate(ages_soft):
+                    ag = round(ag.item(), 3)
+                    # print(f'{get_label_emotion(i)} : {em}')
 
-                frame[y-30:y, x:x+w] = (50,50,50)
+                emotion = torch.argmax(emotion)
+                age = torch.argmax(age)
+
+                percentage = round(emotions_soft[emotion].item(), 2)
+                percentage_age = round(ages_soft[age].item(), 2)
+
+                emotion = emotion.squeeze().cpu().detach().item()
+                age = age.squeeze().cpu().detach().item()
+
+                emotion = get_label_emotion(emotion)
+                age = get_label_age(age)
+
+                # draw emotion info
+                frame[y-60:y, x:x+w] = (50,50,50)
                 cv2.putText(frame, emotion, (x,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,200,200))
                 cv2.putText(frame, str(percentage), (x + w - 40,y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
                             (200,200,0))
+
+                # draw age info
+                cv2.putText(frame, age, (x, y - 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 200, 200))
+                cv2.putText(frame, str(percentage_age), (x + w - 40, y - 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+                            (200, 200, 0))
+
+                # enclose face
                 cv2.rectangle(frame, (x,y), (x+w, y+h), (255,0,0), 3)
     
         cv2.putText(frame, str(fps), (10,25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0))
@@ -120,7 +153,9 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--haar', action='store_true', help='run the haar cascade face detector')
-    parser.add_argument('--pretrained',type=str,default='checkpoint/model_weights/weights_epoch_75.pth.tar' 
+    parser.add_argument('--pretrained',type=str,default='custom_models/train_original.pth.tar'
+                        ,help='load weights')
+    parser.add_argument('--pretrained_age',type=str,default='custom_models/train_RAF_age.pth.tar'
                         ,help='load weights')
     parser.add_argument('--head_pose', action='store_true', help='visualization of head pose euler angles')
     parser.add_argument('--path', type=str, default='', help='path to video to test')

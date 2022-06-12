@@ -25,7 +25,7 @@ class FER2013(Dataset):
     pixels: 48x48 pixel value (uint8)
     Usage: [Training, PrivateTest, PublicTest]    
     """
-    def __init__(self, root='../data', mode = 'train', transform = None):
+    def __init__(self, root='/data', mode = 'train', transform = None):
         
         self.root = root
         self.transform = transform

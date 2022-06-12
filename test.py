@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument('--datapath', type=str, default='data', help='root path of augumented WFLW dataset')
     parser.add_argument('--resume', action='store_true', help='resume from pretrained path specified in prev arg')
     parser.add_argument('--mode', type=str, choices=['train', 'test', 'val'], default='test', help='dataset mode')    
-    parser.add_argument('--pretrained', type=str,default='checkpoint/model_weights/weights_epoch_75.pth.tar')
+    parser.add_argument('--pretrained', type=str,default='checkpoint/model_weights/train_original.pth.tar')
     args = parser.parse_args()
     return args
 # ======================================================================
