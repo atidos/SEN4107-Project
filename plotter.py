@@ -52,18 +52,27 @@ def get_train_data(log):
 
     return data
 
-fig = plt.figure()
 
-while True:
-    a = get_train_data("checkpoint/logging_dataset_raf_15_0.001_40_1e-06")
-    plt.plot(a["accuracy"], label="Accuracy", color=(0.5,0,1))
-    plt.plot(a["percision"], label="Precision", color=(0,1,0.5))
+plt.title("MiniXception / Hybrid Dataset / Batch Size:15")
+a = get_train_data("custom_logs/logging_data_15_0.001_40_1e-06")
+
+
+def acc(a):
+    plt.plot(a["accuracy"], label="Accuracy", color=(1,0,0))
+    plt.plot(a["percision"], label="Precision", color=(0,0,1))
+
+    plt.grid()
     plt.legend()
-    plt.ylim([0, 100])
-    #plt.xlim([0, 100])
     plt.xlabel("Epoch")
-    plt.ylabel("Percent %")
+    plt.ylabel("Percentage %")
     plt.draw()
-    plt.pause(1)
-    fig.clear()
 
+def loss(a):
+    plt.plot(a["val_loss"], label="Validation Loss", color=(1, 0, 0))
+    plt.plot(a["train_loss"], label="Train Loss", color=(0, 0, 1))
+
+    plt.grid()
+    plt.legend()
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.draw()

@@ -43,7 +43,9 @@ def parse_args():
     parser.add_argument('--logdir', type=str, default='checkpoint/logging', help='logging')
     parser.add_argument("--lr_patience", default=40, type=int)
     parser.add_argument('--evaluate', action='store_true', help='evaluation only')
-    parser.add_argument('--mode', type=str, default='val', choices=['val','test', 'train'], help='dataset type for evaluation only')   
+    parser.add_argument('--mode', type=str, default='val', choices=['val','test', 'train'], help='dataset type for evaluation only')
+    parser.add_argument('--age_mode', action='store_true', help='age mode')
+
     args = parser.parse_args()
     return args
 # ======================================================================
@@ -86,8 +88,12 @@ def main():
 
     # train_dataloader, test_dataloader = create_CK_dataloader(batch_size=args.batch_size)
     start_epoch = 0
-    # ======== models & loss ========== 
-    mini_xception = Mini_Xception()
+    # ======== models & loss ==========
+    if args.age_mode:
+        mini_xception = Mini_Xception(5)
+    else:
+        mini_xception = Mini_Xception()
+
     loss = nn.CrossEntropyLoss()
     # ========= load weights ===========
     if args.resume or args.evaluate:
