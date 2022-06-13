@@ -66,12 +66,15 @@ writer = tensorboard.SummaryWriter(args.tensorboard)
 def main():
     # ========= dataloaders ===========
     transform = transforms.Compose([transforms.Grayscale(num_output_channels=1),
+                                    transforms.ToPILImage(),
+                                    transforms.RandomEqualize(p=1),
                                     transforms.ToTensor()])
 
     trainDataset = datasets.ImageFolder("custom_data/dataset_raf/Train", transform=transform)
-    testDataset = datasets.ImageFolder("custom_data/dataset_raf/Test", transform=transform)
-    train_dataloader = torch.utils.data.DataLoader(trainDataset, batch_size=64, shuffle=True)
-    test_dataloader = torch.utils.data.DataLoader(testDataset, batch_size=2, shuffle=True)
+
+    train_dataloader = torch.utils.data.DataLoader(trainDataset, batch_size=args.batch_size, shuffle=True)
+    test_dataloader = create_val_dataloader(root=args.datapath, batch_size=args.batch_size)
+
     # train_dataloader, test_dataloader = create_CK_dataloader(batch_size=args.batch_size)
     start_epoch = 0
     # ======== models & loss ==========

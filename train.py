@@ -10,28 +10,28 @@ import logging
 import time
 import os
 from tqdm import tqdm
-
 import torch
 import torch.nn as nn
 import torch.optim
 import torch.utils.tensorboard as tensorboard
 import torch.backends.cudnn as cudnn
-cudnn.benchmark = True
-cudnn.enabled = True
+from torchvision import datasets, transforms
 
+import utils
 from model.model import Mini_Xception
 from dataset import create_train_dataloader, create_val_dataloader, create_test_dataloader
 from utils import visualize_confusion_matrix
-
 from sklearn.metrics import precision_score, recall_score, accuracy_score, confusion_matrix
 
+cudnn.benchmark = True
+cudnn.enabled = True
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=300, help='num of training epochs')
     parser.add_argument('--batch_size', type=int, default=15, help="training batch size")
     parser.add_argument('--tensorboard', type=str, default='checkpoint/tensorboard', help='path log dir of tensorboard')
-    parser.add_argument('--logging', type=str, default='checkpoint/logging', help='path of logging')
+    parser.add_argument('--logging', type=str, default='checkpoint', help='path of logging')
     parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
     parser.add_argument('--weight_decay', type=float, default=1e-6, help='optimizer weight decay')
     parser.add_argument('--datapath', type=str, default='data', help='root path of dataset')
@@ -52,14 +52,30 @@ args = parse_args()
 logging.basicConfig(
 format='[%(message)s',
 level=logging.INFO,
-handlers=[logging.FileHandler(args.logdir, mode='w'), logging.StreamHandler()])
+handlers=[logging.FileHandler(args.logdir + "_" +
+                              args.datapath.split("/")[-1] + "_" +
+                              str(args.batch_size) + "_" +
+                              str(args.lr) + "_" +
+                              str(args.lr_patience) + "_" +
+                              str(args.weight_decay), mode='w'), logging.StreamHandler()])
 # tensorboard
 writer = tensorboard.SummaryWriter(args.tensorboard)
 
 def main():
     # ========= dataloaders ===========
-    train_dataloader = create_train_dataloader(root=args.datapath, batch_size=args.batch_size)
-    test_dataloader = create_val_dataloader(root=args.datapath, batch_size=args.batch_size)
+    if args.datapath == "data":
+        train_dataloader = create_train_dataloader(root=args.datapath, batch_size=args.batch_size)
+        test_dataloader = create_val_dataloader(root=args.datapath, batch_size=args.batch_size)
+    else:
+        transform = transforms.Compose([#transforms.Grayscale(num_output_channels=1),
+                                        transforms.ToPILImage(),
+                                        transforms.RandomEqualize(p=1),
+                                        transforms.ToTensor()])
+
+        trainDataset = datasets.ImageFolder(args.datapath, transform=utils.get_transforms())
+        train_dataloader = torch.utils.data.DataLoader(trainDataset, batch_size=args.batch_size, shuffle=True)
+        test_dataloader = create_val_dataloader(root=args.datapath, batch_size=args.batch_size)
+
     # train_dataloader, test_dataloader = create_CK_dataloader(batch_size=args.batch_size)
     start_epoch = 0
     # ======== models & loss ========== 
@@ -117,7 +133,13 @@ def main():
                 'mini_xception': mini_xception.state_dict(),
                 "epoch": epoch
             }
-            savepath = os.path.join(args.savepath, f'weights_epoch_{epoch}.pth.tar')
+            savepath = os.path.join(args.savepath, f'{epoch}' + "_" +
+                                                   args.datapath.split("/")[-1] + "_" +
+                                                   str(args.batch_size) + "_" +
+                                                   str(args.lr) + "_" +
+                                                   str(args.lr_patience) + "_" +
+                                                   str(args.weight_decay)
+                                                   + '.pth.tar')
             torch.save(checkpoint_state, savepath)
             print(f'\n\t*** Saved checkpoint in {savepath} ***\n')
             time.sleep(2)

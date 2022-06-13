@@ -66,6 +66,8 @@ writer = tensorboard.SummaryWriter(args.tensorboard)
 def main():
     # ========= dataloaders ===========
     transform = transforms.Compose([transforms.Grayscale(num_output_channels=1),
+                                    transforms.RandomEqualize(p=1),
+                                    transforms.RandomHorizontalFlip(p=0.5),
                                     transforms.ToTensor()])
 
     trainDataset = datasets.ImageFolder("custom_data/dataset_raf_augmented/Train", transform=transform)

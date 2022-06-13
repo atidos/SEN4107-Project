@@ -153,7 +153,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--haar', action='store_true', help='run the haar cascade face detector')
-    parser.add_argument('--pretrained',type=str,default='custom_models/train_original.pth.tar'
+    parser.add_argument('--pretrained',type=str,default='custom_models/train_RAF(equalization).pth.tar'
                         ,help='load weights')
     parser.add_argument('--pretrained_age',type=str,default='custom_models/train_RAF_age.pth.tar'
                         ,help='load weights')

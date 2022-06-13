@@ -66,6 +66,7 @@ writer = tensorboard.SummaryWriter(args.tensorboard)
 def main():
     # ========= dataloaders ===========
     transform = transforms.Compose([transforms.Grayscale(num_output_channels=1),
+                                    transforms.RandomEqualize(p=1),
                                     transforms.ToTensor()])
 
     trainDataset = datasets.ImageFolder("custom_data/dataset_age/Train", transform=transform)
