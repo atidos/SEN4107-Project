@@ -2,7 +2,7 @@ import time
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+import random
 def get_train_data(log):
     with open(log, "r") as f:
         list = f.read().split("\n")
@@ -55,11 +55,14 @@ def get_train_data(log):
 fig = plt.figure()
 
 while True:
-    a = get_train_data("checkpoint/logging_data_15_0.001_40_1e-06")
-    plt.plot(a["accuracy"])
-    plt.plot(a["percision"])
+    a = get_train_data("checkpoint/logging_dataset_raf_15_0.001_40_1e-06")
+    plt.plot(a["accuracy"], label="Accuracy", color=(0.5,0,1))
+    plt.plot(a["percision"], label="Precision", color=(0,1,0.5))
+    plt.legend()
     plt.ylim([0, 100])
-    plt.xlim([0, 75])
+    #plt.xlim([0, 100])
+    plt.xlabel("Epoch")
+    plt.ylabel("Percent %")
     plt.draw()
     plt.pause(1)
     fig.clear()

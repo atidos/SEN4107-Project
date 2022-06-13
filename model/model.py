@@ -71,7 +71,7 @@ class ResidualXceptionBlock(nn.Module):
         return x + residual
 
 class Mini_Xception(nn.Module):
-    def __init__(self):
+    def __init__(self, output=7):
         super(Mini_Xception, self).__init__()
 
         # self.conv1 = conv_bn_relu(1, 32, kernel_size=3, stride=1, padding=0)
@@ -94,7 +94,7 @@ class Mini_Xception(nn.Module):
             ResidualXceptionBlock(32, 64).to(device),
             ResidualXceptionBlock(64, 128).to(device)            
         ])
-        self.conv3 = nn.Conv2d(128, 7, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(128, output, kernel_size=3, stride=1, padding=1)
 
         self.global_avg_pool = nn.AdaptiveAvgPool2d(1)
 

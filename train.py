@@ -35,6 +35,7 @@ def parse_args():
     parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
     parser.add_argument('--weight_decay', type=float, default=1e-6, help='optimizer weight decay')
     parser.add_argument('--datapath', type=str, default='data', help='root path of dataset')
+    parser.add_argument('--test_datapath', type=str, default='data', help='root path of test dataset')
     parser.add_argument('--pretrained', type=str,default='checkpoint/model_weights/train_original.pth.tar',help='load checkpoint')
     parser.add_argument('--resume', action='store_true', help='resume from pretrained path specified in prev arg')
     parser.add_argument('--savepath', type=str, default='checkpoint/model_weights', help='save checkpoint path')    
@@ -61,20 +62,27 @@ handlers=[logging.FileHandler(args.logdir + "_" +
 # tensorboard
 writer = tensorboard.SummaryWriter(args.tensorboard)
 
+transform = transforms.Compose([transforms.Grayscale(num_output_channels=1),
+                                transforms.RandomEqualize(p=1),
+                                # transforms.ToPILImage(),
+                                transforms.RandomHorizontalFlip(p=0.5),
+                                transforms.ToTensor()])
+
 def main():
     # ========= dataloaders ===========
     if args.datapath == "data":
         train_dataloader = create_train_dataloader(root=args.datapath, batch_size=args.batch_size)
         test_dataloader = create_val_dataloader(root=args.datapath, batch_size=args.batch_size)
     else:
-        transform = transforms.Compose([#transforms.Grayscale(num_output_channels=1),
-                                        transforms.ToPILImage(),
-                                        transforms.RandomEqualize(p=1),
-                                        transforms.ToTensor()])
-
-        trainDataset = datasets.ImageFolder(args.datapath, transform=utils.get_transforms())
+        trainDataset = datasets.ImageFolder(args.datapath + "/Train", transform=transform)
+        print(trainDataset.class_to_idx)
         train_dataloader = torch.utils.data.DataLoader(trainDataset, batch_size=args.batch_size, shuffle=True)
-        test_dataloader = create_val_dataloader(root=args.datapath, batch_size=args.batch_size)
+
+        if args.test_datapath == "data":
+            test_dataloader = create_val_dataloader(root="data", batch_size=args.batch_size)
+        else:
+            testDataset = datasets.ImageFolder(args.test_datapath + "/Test", transform=transform)
+            test_dataloader = torch.utils.data.DataLoader(testDataset, batch_size=args.batch_size, shuffle=True)
 
     # train_dataloader, test_dataloader = create_CK_dataloader(batch_size=args.batch_size)
     start_epoch = 0
@@ -93,12 +101,20 @@ def main():
         time.sleep(2)
 
     if args.evaluate:
-        if args.mode == 'test':
-            test_dataloader = create_test_dataloader(root=args.datapath, batch_size=args.batch_size)
-        elif args.mode == 'val':
-            test_dataloader = create_val_dataloader(root=args.datapath, batch_size=args.batch_size)
+        if args.test_datapath == "data":
+            if args.mode == 'test':
+                test_dataloader = create_test_dataloader(args.test_datapath, batch_size=args.batch_size)
+            elif args.mode == 'val':
+                test_dataloader = create_val_dataloader(args.test_datapath, batch_size=args.batch_size)
+            else:
+                test_dataloader = create_train_dataloader(args.test_datapath, batch_size=args.batch_size)
         else:
-            test_dataloader = create_train_dataloader(root=args.datapath, batch_size=args.batch_size)
+            if args.mode == 'val':
+                testDataset = datasets.ImageFolder(args.test_datapath + "/Test", transform=transform)
+                test_dataloader = torch.utils.data.DataLoader(testDataset, batch_size=args.batch_size, shuffle=True)
+            elif args.mode == 'train':
+                testDataset = datasets.ImageFolder(args.test_datapath + "/Train", transform=transform)
+                test_dataloader = torch.utils.data.DataLoader(testDataset, batch_size=args.batch_size, shuffle=True)
 
         validate(mini_xception, loss, test_dataloader, 0)
         return
@@ -160,6 +176,10 @@ def train_one_epoch(model, criterion, optimizer, dataloader, epoch):
         emotions = torch.squeeze(emotions)
         # print(emotions)
         # print(labels,'\n')
+
+        if len(labels) == 1:
+            labels = labels[0]
+
         loss = criterion(emotions, labels)
         losses.append(loss.cpu().item())
         print(f'training @ epoch {epoch} .. loss = {round(loss.item(),3)}')
@@ -193,7 +213,8 @@ def validate(model, criterion, dataloader, epoch):
             emotions = torch.squeeze(emotions)
             emotions = emotions.reshape(mini_batch, -1)
 
-            loss = criterion(emotions, labels)            
+            loss = criterion(emotions, labels)
+
             losses.append(loss.cpu().item())
 
             # # ============== Evaluation ===============
