@@ -4,7 +4,7 @@ email: amrelsersay@gmail.com
 -----------------------------------------------------------------------------------
 Description: Training & Validation
 """
-import numpy as np
+import numpy as np 
 import argparse, cv2
 import logging
 import time
@@ -18,7 +18,7 @@ import torch.backends.cudnn as cudnn
 from torchvision import datasets, transforms
 
 import utils
-from model.model import Mini_Xception
+from model.model import Mini_Yception
 from dataset import create_train_dataloader, create_val_dataloader, create_test_dataloader
 from utils import visualize_confusion_matrix
 from sklearn.metrics import precision_score, recall_score, accuracy_score, confusion_matrix
@@ -38,12 +38,14 @@ def parse_args():
     parser.add_argument('--test_datapath', type=str, default='data', help='root path of test dataset')
     parser.add_argument('--pretrained', type=str,default='checkpoint/model_weights/train_original.pth.tar',help='load checkpoint')
     parser.add_argument('--resume', action='store_true', help='resume from pretrained path specified in prev arg')
-    parser.add_argument('--savepath', type=str, default='checkpoint/model_weights', help='save checkpoint path')
+    parser.add_argument('--savepath', type=str, default='checkpoint/model_weights', help='save checkpoint path')    
     parser.add_argument('--savefreq', type=int, default=1, help="save weights each freq num of epochs")
     parser.add_argument('--logdir', type=str, default='checkpoint/logging', help='logging')
     parser.add_argument("--lr_patience", default=40, type=int)
     parser.add_argument('--evaluate', action='store_true', help='evaluation only')
     parser.add_argument('--mode', type=str, default='val', choices=['val','test', 'train'], help='dataset type for evaluation only')
+    parser.add_argument('--age_mode', action='store_true', help='age mode')
+
     args = parser.parse_args()
     return args
 # ======================================================================
@@ -53,7 +55,7 @@ args = parse_args()
 logging.basicConfig(
 format='[%(message)s',
 level=logging.INFO,
-handlers=[logging.FileHandler(args.logdir + "_" +
+handlers=[logging.FileHandler(args.logdir + "_y_" +
                               args.datapath.split("/")[-1] + "_" +
                               str(args.batch_size) + "_" +
                               str(args.lr) + "_" +
@@ -87,7 +89,11 @@ def main():
     # train_dataloader, test_dataloader = create_CK_dataloader(batch_size=args.batch_size)
     start_epoch = 0
     # ======== models & loss ==========
-    mini_xception = Mini_Xception(5)
+    if args.age_mode:
+        mini_xception = Mini_Yception(5)
+    else:
+        mini_xception = Mini_Yception()
+
     loss = nn.CrossEntropyLoss()
     # ========= load weights ===========
     if args.resume or args.evaluate:
@@ -119,7 +125,7 @@ def main():
         validate(mini_xception, loss, test_dataloader, 0)
         return
 
-    # =========== optimizer ===========
+    # =========== optimizer =========== 
     # parameters = mini_xception.named_parameters()
     # for name, p in parameters:
     #     print(p.requires_grad, name)
@@ -149,7 +155,7 @@ def main():
                 'mini_xception': mini_xception.state_dict(),
                 "epoch": epoch
             }
-            savepath = os.path.join(args.savepath, f'{epoch}' + "_" +
+            savepath = os.path.join(args.savepath, "y_"+f'{epoch}' + "_" +
                                                    args.datapath.split("/")[-1] + "_" +
                                                    str(args.batch_size) + "_" +
                                                    str(args.lr) + "_" +
@@ -170,7 +176,7 @@ def train_one_epoch(model, criterion, optimizer, dataloader, epoch):
 
         images = images.to(device) # (batch, 1, 48, 48)
         labels = labels.to(device) # (batch,)
-
+        
         emotions = model(images)
         # from (batch, 7, 1, 1) to (batch, 7)
         emotions = torch.squeeze(emotions)
@@ -231,7 +237,7 @@ def validate(model, criterion, dataloader, epoch):
         recall = recall_score(total_labels, total_pred, average='macro')
         accuracy = accuracy_score(total_labels, total_pred)
 
-        val_loss, accuracy, percision, recall = round(val_loss,3), round(accuracy,3), round(percision,3), round(recall,3)
+        val_loss, accuracy, percision, recall = round(val_loss,3), round(accuracy,3), round(percision,3), round(recall,3)    
         print(f'Val loss = {val_loss} .. Accuracy = {accuracy} .. Percision = {percision} .. Recall = {recall}')
 
         if args.evaluate:

@@ -72,7 +72,7 @@ class ResidualXceptionBlock(nn.Module):
 
 class ResidualZceptionBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel=3):
-        super(ResidualXceptionBlock, self).__init__()
+        super(ResidualZceptionBlock, self).__init__()
         global device
 
         self.depthwise_conv1 = SeparableConv2D(in_channels, out_channels, kernel).to(device)

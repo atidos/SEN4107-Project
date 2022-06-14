@@ -59,6 +59,7 @@ def acc(a):
 
     plt.grid()
     plt.legend()
+    plt.ylim(0,100)
     plt.xlabel("Epoch")
     plt.ylabel("Percentage %")
     plt.show()
@@ -73,7 +74,7 @@ def loss(a):
     plt.ylabel("Loss")
     plt.show()
 
-plt.title("MiniXception / RAF Dataset / Batch Size:64")
-a = get_train_data("checkpoint/logging_dataset_age_15_0.001_40_1e-06")
-acc(a)
+plt.title("MiniZception / RAF Dataset / Batch Size:64")
+a = get_train_data("checkpoint/logging_z_dataset_raf_64_0.001_40_1e-06")
+loss(a)
 
