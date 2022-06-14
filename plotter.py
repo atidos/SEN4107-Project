@@ -3,6 +3,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import random
+
 def get_train_data(log):
     with open(log, "r") as f:
         list = f.read().split("\n")
@@ -52,11 +53,6 @@ def get_train_data(log):
 
     return data
 
-
-plt.title("MiniXception / Hybrid Dataset / Batch Size:15")
-a = get_train_data("custom_logs/logging_data_15_0.001_40_1e-06")
-
-
 def acc(a):
     plt.plot(a["accuracy"], label="Accuracy", color=(1,0,0))
     plt.plot(a["percision"], label="Precision", color=(0,0,1))
@@ -65,7 +61,7 @@ def acc(a):
     plt.legend()
     plt.xlabel("Epoch")
     plt.ylabel("Percentage %")
-    plt.draw()
+    plt.show()
 
 def loss(a):
     plt.plot(a["val_loss"], label="Validation Loss", color=(1, 0, 0))
@@ -75,4 +71,9 @@ def loss(a):
     plt.legend()
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
-    plt.draw()
+    plt.show()
+
+plt.title("MiniXception / RAF Dataset / Batch Size:64")
+a = get_train_data("checkpoint/logging_dataset_age_15_0.001_40_1e-06")
+acc(a)
+

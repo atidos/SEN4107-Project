@@ -29,7 +29,7 @@ def main(args):
     mini_xception = Mini_Xception().to(device)
     mini_xception.eval()
 
-    mini_xception_age = Mini_Xception().to(device)
+    mini_xception_age = Mini_Xception(5).to(device)
     mini_xception_age.eval()
 
     # Load model
