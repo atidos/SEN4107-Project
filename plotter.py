@@ -53,28 +53,29 @@ def get_train_data(log):
 
     return data
 
-def acc(a):
-    plt.plot(a["accuracy"], label="Accuracy", color=(1,0,0))
-    plt.plot(a["percision"], label="Precision", color=(0,0,1))
+def acc(a,b):
+    plt.plot(a["accuracy"], label="0.001", color=(1,0,0))
+    plt.plot(b["accuracy"], label="0.0001", color=(0,0,1))
 
     plt.grid()
     plt.legend()
     plt.ylim(0,100)
     plt.xlabel("Epoch")
-    plt.ylabel("Percentage %")
+    plt.ylabel("Accuracy")
     plt.show()
 
-def loss(a):
-    plt.plot(a["val_loss"], label="Validation Loss", color=(1, 0, 0))
-    plt.plot(a["train_loss"], label="Train Loss", color=(0, 0, 1))
+def loss(a,b):
+    plt.plot(a["val_loss"], label="0.001", color=(1, 0, 0))
+    plt.plot(b["val_loss"], label="0.0001", color=(0, 0, 1))
 
     plt.grid()
     plt.legend()
     plt.xlabel("Epoch")
-    plt.ylabel("Loss")
+    plt.ylabel("Validation Loss")
     plt.show()
 
-plt.title("MiniZception / RAF Dataset / Batch Size:64")
-a = get_train_data("checkpoint/logging_z_dataset_raf_64_0.001_40_1e-06")
-loss(a)
+plt.title("MiniXception / FER2013 Dataset / Batch Size:15")
+a = get_train_data("custom_logs/logging_data_15_0.001_40_1e-06")
+b = get_train_data("checkpoint/logging_data_15_0.0001_40_1e-06")
+loss(a,b)
 

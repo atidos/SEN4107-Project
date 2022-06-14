@@ -243,7 +243,10 @@ def validate(model, criterion, dataloader, epoch):
         if args.evaluate:
             conf_matrix = confusion_matrix(total_labels, total_pred, normalize='true')
             print('Confusion Matrix\n', conf_matrix)
-            visualize_confusion_matrix(conf_matrix)
+            if args.age_mode:
+                visualize_confusion_matrix(conf_matrix, 5)
+            else:
+                visualize_confusion_matrix(conf_matrix)
 
         return val_loss, accuracy, percision, recall
 

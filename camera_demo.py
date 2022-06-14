@@ -153,9 +153,9 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--haar', action='store_true', help='run the haar cascade face detector')
-    parser.add_argument('--pretrained',type=str,default='custom_models/train_RAF(equalization).pth.tar'
+    parser.add_argument('--pretrained',type=str,default='custom_models/73_dataset_hybrid_64_0.001_40_1e-06.pth.tar'
                         ,help='load weights')
-    parser.add_argument('--pretrained_age',type=str,default='custom_models/train_RAF_age.pth.tar'
+    parser.add_argument('--pretrained_age',type=str,default='custom_models/69_dataset_age_15_0.001_40_1e-06.pth.tar'
                         ,help='load weights')
     parser.add_argument('--head_pose', action='store_true', help='visualization of head pose euler angles')
     parser.add_argument('--path', type=str, default='', help='path to video to test')

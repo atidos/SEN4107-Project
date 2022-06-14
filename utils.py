@@ -42,10 +42,10 @@ def get_label_emotion(label : int) -> str:
 def get_label_age(label : int) -> str:
     label_age_map = {
         0: '0-3',
-        1: '4-19',
-        2: '20-39',
+        1: '20-39',
+        2: '4-19',
         3: '40-69',
-        4: '70+',
+        4: '70+'
     }
     return label_age_map[label]
 
@@ -114,8 +114,8 @@ def normalize_dataset_mode_255(image):
     image = (image - mean) / std
     return image
 
-def visualize_confusion_matrix(confusion_matrix):
-    df_cm = pd.DataFrame(confusion_matrix, range(7), range(7))
+def visualize_confusion_matrix(confusion_matrix, size=7):
+    df_cm = pd.DataFrame(confusion_matrix, range(size), range(size))
     sn.set(font_scale=1.1) # for label size
     sn.heatmap(df_cm, annot=True, annot_kws={"size": 16}) # font size
     plt.show()
